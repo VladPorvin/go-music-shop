@@ -1,0 +1,5 @@
+curl "http://localhost:8081/albums"
+
+###
+
+curl "http://localhost:8081/albums"
