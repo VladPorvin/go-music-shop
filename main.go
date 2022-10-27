@@ -13,6 +13,10 @@ type album struct {
 	Price  float64 `json:"price"`
 }
 
+type error struct {
+	Error string `json:"error"`
+}
+
 var albums = []album{
 	{ID: "1", Title: "Blue Train", Artist: "John Coltrane", Price: 56.99},
 	{ID: "2", Title: "Jeru", Artist: "Gerry Mulligan", Price: 17.99},
@@ -34,6 +38,30 @@ func postAlbums(c *gin.Context) {
 	c.IndentedJSON(http.StatusCreated, newAlbum)
 }
 
+func deleteAlbumByID(c *gin.Context) {
+	id := c.Param("id")
+	for i, a := range albums {
+		if a.ID == id {
+			albums = append(albums[:i], albums[i+1:]...)
+			c.IndentedJSON(http.StatusNoContent, a)
+			return
+		}
+	}
+	c.IndentedJSON(http.StatusNotFound, error{"not_found"})
+}
+
+func updateAlbumById(c *gin.Context) {
+	id := c.Param("id")
+	for i := range albums {
+		if albums[i].ID == id {
+			c.BindJSON(&albums[i])
+			c.IndentedJSON(http.StatusOK, albums[i])
+			return
+		}
+	}
+	c.IndentedJSON(http.StatusNotFound, error{"not_found"})
+}
+
 func getAlbumByID(c *gin.Context) {
 	id := c.Param("id")
 
@@ -49,6 +77,10 @@ func getAlbumByID(c *gin.Context) {
 func main() {
 	router := gin.Default()
 	router.GET("/albums", getAlbums)
+	router.GET("/albums/:id", getAlbumByID)
+	router.DELETE("/albums/:id", deleteAlbumByID)
+	router.PUT("/albums/:id", updateAlbumById)
+	router.POST("/albums", postAlbums)
 
-	router.Run("localhost:8081")
+	router.Run("localhost:8080")
 }
